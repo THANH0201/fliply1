@@ -43,4 +43,4 @@ The goal of Sprint 2 is to start the implementation for the **Online Flashcard S
 - Agile and Scrum practices followed
 
 ## Definition of Done
-Sprint 2 is complete when all planning tasks are finalized and ready for Sprint Review.
+Sprint 2 is complete when all planning tasks are finalized and ready for Sprint Review
