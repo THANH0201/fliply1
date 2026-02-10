@@ -27,7 +27,7 @@ The goal of Sprint 2 is to begin implementing the Online Flashcard System for St
 - UI and database designs  
 
 ## What Went Well
-- Effective teamwork
+- Effective teamwork 
 - Well-defined project scope
 - Successful completion of all Sprint 2 objectives
 - Solid grasp of Agile methodologies 
