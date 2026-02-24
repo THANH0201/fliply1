@@ -111,6 +111,14 @@ public class QuizService {
         return quizDao.findByUserId(userId);
     }
 
+    public void save(Quiz quiz) {
+        if (quiz == null) return;
+        quizDao.persist(quiz);
+    }
+
+    public void update(Quiz quiz) {
+        quizDao.update(quiz);
+    }
 
     // DTO for UI
     public static class QuizQuestion {

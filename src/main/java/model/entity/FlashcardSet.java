@@ -19,7 +19,7 @@ public class FlashcardSet {
     @JoinColumn(name = "ClassId", referencedColumnName = "ClassId", nullable = false)
     private ClassModel classModel;
 
-    @OneToMany(mappedBy = "flashcardSet", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "flashcardSet", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Collection<Flashcard> cards;
 
     public Collection<Flashcard> getCards() { return cards; }

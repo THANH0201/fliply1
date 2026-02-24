@@ -10,6 +10,7 @@ import javafx.scene.layout.GridPane;
 import model.AppState;
 import model.entity.Flashcard;
 import model.entity.FlashcardSet;
+import model.service.FlashcardSetService;
 import view.Navigator;
 
 import java.io.IOException;
@@ -35,13 +36,11 @@ public class FlashcardSetController {
 
     private List<Flashcard> setCards;
 
+    private final FlashcardSetService flashcardSetService = new FlashcardSetService();
+
     @FXML
     private void initialize() {
-        FlashcardSet set = AppState.selectedFlashcardSet.get();
-        if (set == null) {
-            Navigator.go(AppState.Screen.CLASS_DETAIL);
-            return;
-        }
+        FlashcardSet set = flashcardSetService.getSetWithCards( AppState.selectedFlashcardSet.get().getFlashcardSetId() );
         setCards = new ArrayList<>(set.getCards());
         // Header
         if (headerController != null) {

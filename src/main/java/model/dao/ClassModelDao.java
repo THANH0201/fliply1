@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import model.datasource.MariaDbJPAConnection;
 import model.entity.ClassModel;
+import model.entity.FlashcardSet;
 
 import java.util.List;
 
@@ -120,6 +121,36 @@ public class ClassModelDao {
                     .getSingleResult();
         }
     }
+    public void deleteClassWithRelations(ClassModel classModel) {
+        try (EntityManager em = MariaDbJPAConnection.createEntityManager()) {
+            em.getTransaction().begin();
+            try {
+                ClassModel merged = em.merge(classModel);
 
+                // 1. delete flashcards of flashcard set
+                merged.getFlashcardSets().forEach(set -> {
+                    FlashcardSet mergedSet = em.merge(set);
+                    mergedSet.getTotalCards().forEach(card -> {
+                        em.remove(em.merge(card));
+                    });
+                    em.remove(mergedSet);
+                });
+
+
+                // 2. Delete students in class
+                merged.getStudents().forEach(cd -> {
+                    em.remove(em.merge(cd));
+                });
+
+                // 3. Delete class
+                em.remove(merged);
+
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        }
+    }
 
 }

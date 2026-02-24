@@ -38,4 +38,7 @@ public class FlashcardService {
     public void save(Flashcard newCard) {
         flashDao.persist(newCard);
     }
+
+
 }
+

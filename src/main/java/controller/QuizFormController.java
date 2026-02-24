@@ -23,7 +23,14 @@ public class QuizFormController {
         if (headerController != null) {
             headerController.setTitle("New Quiz");
             headerController.setBackVisible(true);
-            headerController.setOnBack(() -> Navigator.go(AppState.Screen.QUIZZES));
+            headerController.setOnBack(() -> {
+                // Điều hướng đúng theo nguồn mở form
+                if (AppState.isFromFlashcardSet.get()) {
+                    Navigator.go(AppState.Screen.FLASHCARD_SET);
+                } else {
+                    Navigator.go(AppState.Screen.QUIZZES);
+                }
+            });
         }
         AppState.navOverride.set(AppState.NavItem.QUIZZES);
     }
@@ -40,6 +47,7 @@ public class QuizFormController {
         Quiz quiz = quizService.generateQuiz(user, n);
         if (quiz == null) return;
         // save
+        quizService.save(quiz);
         AppState.selectedQuiz.set(quiz);
         AppState.quizQuestionIndex.set(0);
         AppState.quizPoints.set(0);
@@ -52,7 +60,10 @@ public class QuizFormController {
 
     @FXML
     private void cancel() {
-        AppState.navOverride.set(AppState.NavItem.QUIZZES);
-        Navigator.go(AppState.Screen.QUIZZES);
+        if (AppState.isFromFlashcardSet.get()) {
+            Navigator.go(AppState.Screen.FLASHCARD_SET);
+        } else {
+            Navigator.go(AppState.Screen.QUIZZES);
+        }
     }
 }

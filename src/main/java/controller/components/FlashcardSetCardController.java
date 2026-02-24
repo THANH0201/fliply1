@@ -14,6 +14,7 @@ public class FlashcardSetCardController {
     private Label progressTextLabel;
     @FXML
     private ProgressBar progressBar;
+    private Runnable deleteAction;
 
     public void setSubject(String subject) {
         subjectLabel.setText(subject);
@@ -39,5 +40,13 @@ public class FlashcardSetCardController {
             progressBar.setVisible(show);
             progressBar.setManaged(show);
         }
+    }
+
+    public void setOnDelete(Runnable action) { 
+        this.deleteAction = action;
+    } 
+    @FXML 
+    private void onDeleteClicked() {
+        if (deleteAction != null) deleteAction.run();
     }
 }

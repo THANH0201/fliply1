@@ -15,6 +15,7 @@ import javafx.scene.layout.VBox;
 import model.AppState;
 import model.entity.Flashcard;
 import model.entity.FlashcardSet;
+import model.service.FlashcardService;
 import view.Navigator;
 
 public class TeacherFlashcardSetDetailController {
@@ -37,6 +38,8 @@ public class TeacherFlashcardSetDetailController {
     private Button addMoreBtn;
 
     private FlashcardSet set;
+
+    private FlashcardService flashcardService = new FlashcardService();
 
 
     /**
@@ -187,25 +190,38 @@ public class TeacherFlashcardSetDetailController {
 
     @FXML
     private void onSave() {
-        String term = termField.getText() == null ? "" : termField.getText().trim();
-        String def = definitionArea.getText() == null ? "" : definitionArea.getText().trim();
-        if (term.isBlank() || def.isBlank()) return;
+        String term = termField.getText().trim();
+        String def = definitionArea.getText().trim();
 
-        if (editingRow == null) {
-            // add new
-            Flashcard newCard = new Flashcard();
-            newCard.setTerm(term);
-            newCard.setDefinition(def);
-            newCard.setFlashcardSet(set);
-            set.getCards().add(newCard);
-        } else {
-            // update existing
+        if (term.isBlank()) return;
+
+        // EDIT MODE
+        if (editingRow != null) {
             editingRow.setTerm(term);
             editingRow.setDefinition(def);
+
+            flashcardService.update(editingRow);
+
+            hideEditor();
+            renderList();
+            updateHeaderTotal();
+            return;
         }
+
+        // ADD MODE
+        Flashcard newCard = new Flashcard(
+                term,
+                def,
+                set,
+                AppState.currentUser.get()
+        );
+
+        flashcardService.save(newCard);
+        set.getCards().add(newCard);
 
         hideEditor();
         renderList();
         updateHeaderTotal();
     }
+
 }
