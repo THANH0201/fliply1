@@ -34,14 +34,23 @@ public class QuizResultController {
             Navigator.go(AppState.Screen.QUIZZES);
             return;
         }
+        // Load câu hỏi từ QuizService
+        questions = quizService.buildQuizQuestions(
+                quiz.getQuizId(),
+                AppState.currentUser.get().getUserId() );
 
         if (headerController != null) {
             headerController.setTitle("Result");
             headerController.setSubtitle("Total points: " + AppState.quizPoints.get());
             headerController.setBackVisible(true);
-            headerController.setOnBack(() -> Navigator.go(AppState.Screen.QUIZZES));
+            headerController.setOnBack(() -> {
+                if (AppState.isFromFlashcardSet.get()) {
+                    Navigator.go(AppState.Screen.FLASHCARD_SET);
+                } else {
+                    Navigator.go(AppState.Screen.QUIZZES);
+                }
+            });
         }
-
         AppState.navOverride.set(AppState.NavItem.QUIZZES);
 
         renderResults();
@@ -90,13 +99,16 @@ public class QuizResultController {
         AppState.quizPoints.set(0);
         AppState.quizQuestionIndex.set(0);
 
-        AppState.navOverride.set(AppState.NavItem.QUIZZES);
+        //AppState.navOverride.set(AppState.NavItem.QUIZZES);
         Navigator.go(AppState.Screen.QUIZ_DETAIL);
     }
 
     @FXML
     private void backToList() {
-        AppState.navOverride.set(AppState.NavItem.QUIZZES);
-        Navigator.go(AppState.Screen.QUIZZES);
+        if (AppState.isFromFlashcardSet.get()) {
+            Navigator.go(AppState.Screen.FLASHCARD_SET);
+        } else {
+            Navigator.go(AppState.Screen.QUIZZES);
+        }
     }
 }

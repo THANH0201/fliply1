@@ -11,10 +11,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import model.AppState;
 import model.entity.Flashcard;
-import model.entity.FlashcardSet;
+import model.entity.User;
+import model.service.FlashcardService;
 import view.Navigator;
 
 import java.io.IOException;
+import java.util.List;
 
 public class FlashcardsController {
     @FXML
@@ -24,41 +26,53 @@ public class FlashcardsController {
     @FXML
     private GridPane termGrid;
 
+    private final FlashcardService flashcardService = new FlashcardService();
+
+
     @FXML
     private void initialize() {
-        FlashcardSet set = AppState.selectedSet.get();
-        if (set == null) {
-            Navigator.go(AppState.Screen.HOME);
-            return;
+        // Load Flashcards
+        User user = AppState.currentUser.get();
+        if (user != null) {
+            List<Flashcard> cards = flashcardService.getFlashcardsBySet(user.getUserId());
+            AppState.myFlashcards.setAll(cards);
         }
 
-        headerController.setTitle(set.getSubject());
-        headerController.setSubtitle("Total: " + set.getCards().size());
+        // Header
+        if (headerController != null) {
+            headerController.setTitle("My Flashcards");
+            headerController.setSubtitle("Total: " + AppState.myFlashcards.size());
+            headerController.setBackVisible(true);
+            headerController.setOnBack(() -> Navigator.go(AppState.Screen.HOME));
+        }
 
-        renderGrid(set);
+        renderGrid();
     }
 
-    private void renderGrid(FlashcardSet set) {
+    private void renderGrid() {
         termGrid.getChildren().clear();
 
-        int idx = 0;
-        for (Flashcard card : set.getCards()) {
-
+        for (int i = 0; i < AppState.myFlashcards.size(); i++) {
+            Flashcard card = AppState.myFlashcards.get(i);
+            int index = i;
             Node tile = loadTile(card.getTerm(), false, () -> {
-                AppState.currentFlashcard.set(card);
-                Navigator.go(AppState.Screen.FLASHCARD_DETAIL);
-            });
+                AppState.currentDetailList.setAll(AppState.myFlashcards);
+                AppState.currentDetailIndex.set(index);
 
-            int col = idx % 2;
-            int row = idx / 2;
+                AppState.isFromFlashcardSet.set(false);
+                AppState.navOverride.set(AppState.NavItem.FLASHCARDS);
+
+                Navigator.go(AppState.Screen.FLASHCARD_DETAIL); });
+
+            int col = i % 2;
+            int row = i / 2;
             termGrid.add(tile, col, row);
-            idx++;
         }
-
-        // Add (+) tile
+        // Add tile "+"
         Node addTile = buildAddTile();
-        int col = idx % 2;
-        int row = idx / 2;
+        int addIndex = AppState.myFlashcards.size();
+        int col = addIndex % 2;
+        int row = addIndex / 2;
         termGrid.add(addTile, col, row);
     }
 

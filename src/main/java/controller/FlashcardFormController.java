@@ -79,20 +79,29 @@ public class FlashcardFormController {
                 card.setDefinition(def);
 
                 flashcardService.update(card);
+
+                // set list
+                AppState.currentDetailList.set(idx, card);
             }
 
         } else {
             // ADD MODE
             Flashcard newCard = new Flashcard(term, def, set, user);
             flashcardService.save(newCard);
+            set.getCards().add(newCard);
 
+            // set UI
             AppState.currentDetailList.add(newCard);
         }
 
-        // After save -> back to list
-        //AppState.navOverride.set(AppState.NavItem.FLASHCARDS);
-        Navigator.go(AppState.Screen.FLASHCARDS);
+        // navigate
+        if (AppState.isFromFlashcardSet.get()) {
+            Navigator.go(AppState.Screen.FLASHCARD_SET);
+        } else {
+            Navigator.go(AppState.Screen.FLASHCARDS);
+        }
     }
+
 
     @FXML
     private void cancel() {

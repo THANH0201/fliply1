@@ -46,6 +46,7 @@ public class QuizzesController {
             headerController.setTitle("My Quizzes");
             headerController.setSubtitle("Total: " + quizzes.size());
         }
+        totalLabel.setText("Total: " + quizzes.size());
 
         render();
 
@@ -56,7 +57,7 @@ public class QuizzesController {
     private void render() {
         listBox.getChildren().clear();
 
-        for (Quiz quiz : AppState.myQuizzes) {
+        for (Quiz quiz : AppState.quizList) {
             Node card = loadQuizCard(quiz);
             listBox.getChildren().add(card);
         }

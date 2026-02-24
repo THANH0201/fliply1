@@ -1,7 +1,9 @@
 package model.service;
 
 import model.dao.ClassModelDao;
+import model.entity.ClassDetails;
 import model.entity.ClassModel;
+import model.entity.FlashcardSet;
 import model.entity.User;
 
 import java.util.List;
@@ -19,5 +21,9 @@ public class ClassService {
 
     public List<ClassModel> getClassesByTeacher(int teacherId) {
         return classDao.findByTeacherId(teacherId);
+    }
+
+    public void deleteClass(ClassModel clazz) {
+        classDao.deleteClassWithRelations(clazz);
     }
 }

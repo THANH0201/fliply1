@@ -53,24 +53,38 @@ public class FlashcardDetailController {
         if (headerController != null) {
             headerController.setBackVisible(true);
 
-            if (title != null && !title.isBlank()) headerController.setTitle(title);
+            if (title != null && !title.isBlank()) {
+                headerController.setTitle(title);
+            }
 
             headerController.setSubtitle("Total: " + cards.size());
 
             if (isFromFlashcardSet) {
+                // Back Flashcard Set
                 headerController.setOnBack(() -> Navigator.go(AppState.Screen.FLASHCARD_SET));
-                headerController.setActionsVisible(false);
+
+                // owner
+                Flashcard current = cards.get(index);
+                boolean isOwner = false;
+
+                if (current.getUser() != null && AppState.currentUser.get() != null) {
+                    isOwner = current.getUser().getUserId()
+                            .equals(AppState.currentUser.get().getUserId());
+                }
+
+                // owner  edit/delete
+                headerController.setActionsVisible(isOwner);
+
             } else {
+                // My Flashcards edit/delete
                 headerController.setOnBack(() -> Navigator.go(AppState.Screen.FLASHCARDS));
                 headerController.setActionsVisible(true);
 
                 headerController.setOnEdit(() -> {
-                    // Edit the currently shown card in the master list
-                    int idx = index; // index in cards list
+                    int idx = index;
                     AppState.editingIndex.set(idx);
                     AppState.flashcardFormMode.set(AppState.FormMode.EDIT);
 
-                    // Pre-fill via selectedTerm/Definition (or read directly from list)
                     Flashcard c = cards.get(idx);
                     AppState.selectedTerm.set(c.getTerm());
                     AppState.selectedDefinition.set(c.getDefinition());
@@ -82,7 +96,6 @@ public class FlashcardDetailController {
                 headerController.setOnDelete(() -> {
                     if (cards.isEmpty()) return;
 
-                    // remove from master list (and current detail list)
                     int idx = index;
                     if (idx >= 0 && idx < AppState.myFlashcards.size()) {
                         AppState.myFlashcards.remove(idx);
@@ -90,12 +103,12 @@ public class FlashcardDetailController {
 
                     AppState.currentDetailList.setAll(AppState.myFlashcards);
 
-                    // go back to list
                     AppState.navOverride.set(AppState.NavItem.FLASHCARDS);
                     Navigator.go(AppState.Screen.FLASHCARDS);
                 });
             }
         }
+
 
         render();
         updateNavButtons();

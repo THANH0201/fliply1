@@ -61,9 +61,14 @@ public class QuizDetailController {
         if (headerController != null) {
             headerController.setTitle("Quiz #" + quiz.getQuizId());
             headerController.setBackVisible(true);
-            headerController.setOnBack(() -> Navigator.go(AppState.Screen.QUIZZES));
+            headerController.setOnBack(() -> {
+                if (AppState.isFromFlashcardSet.get()) {
+                    Navigator.go(AppState.Screen.FLASHCARD_SET);
+                } else {
+                    Navigator.go(AppState.Screen.QUIZZES);
+                }
+            });
         }
-
         AppState.navOverride.set(AppState.NavItem.QUIZZES);
         render();
     }
@@ -95,16 +100,8 @@ public class QuizDetailController {
 
         boolean isLast = (idx == total - 1);
 
-        // if last question, hide Next and show View Result (only when answered)
-        if (isLast) {
-            nextBtn.setVisible(false);
-            nextBtn.setManaged(false);
-        } else {
-            nextBtn.setVisible(true);
-            nextBtn.setManaged(true);
-        }
-
-        // restore selection if answered
+        nextBtn.setVisible(!isLast);
+        nextBtn.setManaged(!isLast);
         resetOptionStyles();
 
         if (AppState.quizAnswers.containsKey(idx)) {
@@ -179,7 +176,7 @@ public class QuizDetailController {
 
     @FXML
     private void viewResult() {
-        AppState.navOverride.set(AppState.NavItem.QUIZZES);
+        //AppState.navOverride.set(AppState.NavItem.QUIZZES);
         Navigator.go(AppState.Screen.QUIZ_RESULT);
     }
 

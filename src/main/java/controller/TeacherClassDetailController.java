@@ -6,9 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -18,6 +16,8 @@ import model.entity.ClassModel;
 import model.entity.FlashcardSet;
 import model.entity.User;
 import model.service.ClassDetailsService;
+import model.service.ClassService;
+import model.service.FlashcardSetService;
 import model.service.UserService;
 import view.Navigator;
 
@@ -58,6 +58,8 @@ public class TeacherClassDetailController {
     //private static final List<AppState.StudentItem> ALL_STUDENTS = new ArrayList<>();
     private final ClassDetailsService classDetailsService =  new ClassDetailsService();
     private final UserService userService = new UserService();
+    private final ClassService classService = new ClassService();
+    private final FlashcardSetService flashcardSetService = new FlashcardSetService();
 
     @FXML
     private void initialize() {
@@ -76,6 +78,21 @@ public class TeacherClassDetailController {
             headerController.setTitle(c.getClassName());
             headerController.setOnBack(() -> Navigator.go(AppState.Screen.CLASSES));
             headerController.applyVariant(HeaderController.Variant.TEACHER);
+            //menu More
+            headerController.setActionsVisible(true);
+            //headerController.setEditEnabled(false);
+            headerController.setDeleteEnabled(true);
+            // delete
+            headerController.setOnDelete(() -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                        "Are you sure you want to delete this class?");
+                alert.showAndWait().ifPresent(res -> {
+                    if (res == ButtonType.OK) {
+                        classService.deleteClass(c);
+                        Navigator.go(AppState.Screen.CLASSES);
+                    }
+                });
+            });
         }
 
         // Initial state: only show "+ Add more students"
