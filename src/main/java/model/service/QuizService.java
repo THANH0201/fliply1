@@ -106,6 +106,20 @@ public class QuizService {
         return out;
     }
 
+    public List<Quiz> getQuizzesByUser(Integer userId) {
+        if (userId == null) return Collections.emptyList();
+        return quizDao.findByUserId(userId);
+    }
+
+    public void save(Quiz quiz) {
+        if (quiz == null) return;
+        quizDao.persist(quiz);
+    }
+
+    public void update(Quiz quiz) {
+        quizDao.update(quiz);
+    }
+
     // DTO for UI
     public static class QuizQuestion {
         private final int flashcardId;
@@ -124,5 +138,7 @@ public class QuizService {
         public String getPrompt() { return prompt; }
         public String getCorrectAnswer() { return correctAnswer; }
         public List<String> getOptions() { return options; }
+
+
     }
 }

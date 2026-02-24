@@ -24,7 +24,7 @@ public class QuizDao {
 
     public Quiz find(int quizId) {
         try (EntityManager em = MariaDbJPAConnection.createEntityManager()) {
-            return em.find(Quiz.class, Integer.valueOf(quizId));
+            return em.find(Quiz.class, quizId);
         }
     }
 

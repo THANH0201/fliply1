@@ -1,10 +1,18 @@
 package controller;
 
 import controller.components.HeaderController;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
 import model.AppState;
+import model.entity.ClassModel;
+import model.entity.FlashcardSet;
+import model.service.FlashcardSetService;
 import view.Navigator;
+
+import java.util.List;
 
 public class ClassDetailController {
 
@@ -12,42 +20,59 @@ public class ClassDetailController {
     private Parent header;
     @FXML
     private HeaderController headerController;
+    @FXML
+    private VBox flashcardSetListBox;
+
+    private final FlashcardSetService flashcardSetService = new FlashcardSetService();
 
     @FXML
     private void initialize() {
-        String classCode = AppState.selectedClassCode.get();
-        String teacherName = AppState.selectedTeacherName.get();
 
-        if (classCode == null || classCode.isBlank()) classCode = "Class 00001-A";
-        if (teacherName == null || teacherName.isBlank()) teacherName = "Teacher’s Name";
-
-        if (headerController != null) {
-            headerController.setTitle(classCode);
-            headerController.setMeta(teacherName);
-            headerController.applyVariant(HeaderController.Variant.STUDENT); // or TEACHER
-
+        ClassModel c = AppState.selectedClass.get();
+        if (c == null) {
+            headerController.setTitle("Class");
             headerController.setBackVisible(true);
             headerController.setOnBack(() -> Navigator.go(AppState.Screen.CLASSES));
-        }
-    }
-
-    @FXML
-    private void openFlashcardSet(javafx.event.ActionEvent event) {
-        Object src = event.getSource();
-
-        String setName = "Flashcard Set";
-
-        if (src instanceof javafx.scene.control.Button btn) {
-            Object data = btn.getUserData();
-            if (data != null) {
-                setName = data.toString();
-            }
+            return;
         }
 
-        // Save for next page (demo)
-        AppState.selectedFlashcardSetName.set(setName);
+        // Header
+        headerController.setTitle(c.getClassName());
+        headerController.setMeta("Teacher: " + c.getTeacher().getFirstName() + " " + c.getTeacher().getLastName());
+        headerController.applyVariant(
+                AppState.currentUser.get().isTeacher()
+                        ? HeaderController.Variant.TEACHER
+                        : HeaderController.Variant.STUDENT
+        );
+        headerController.setBackVisible(true);
+        headerController.setOnBack(() -> Navigator.go(AppState.Screen.CLASSES));
 
-        Navigator.go(AppState.Screen.FLASHCARD_SET);
+        // Load Flashcard Sets
+        List<FlashcardSet> sets = flashcardSetService.getSetsByClass(c.getClassId());
+        renderSets(sets);
     }
 
+    private void renderSets(List<FlashcardSet> sets) {
+        flashcardSetListBox.getChildren().clear();
+
+        for (FlashcardSet set : sets) {
+            Button btn = new Button(set.getSubject());
+            btn.setPrefHeight(48);
+            btn.setMaxWidth(Double.MAX_VALUE);
+            btn.setStyle("""
+                    -fx-background-color: white;
+                    -fx-background-radius: 14;
+                    -fx-font-size: 16px;
+                    -fx-font-weight: 600;
+                    -fx-cursor: hand;
+                    """);
+
+            btn.setOnAction(e -> {
+                AppState.selectedFlashcardSet.set(set);
+                Navigator.go(AppState.Screen.FLASHCARD_SET);
+            });
+
+            flashcardSetListBox.getChildren().add(btn);
+        }
+    }
 }

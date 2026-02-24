@@ -14,6 +14,7 @@ public class FlashcardSetCardController {
     private Label progressTextLabel;
     @FXML
     private ProgressBar progressBar;
+    private Runnable deleteAction;
 
     public void setSubject(String subject) {
         subjectLabel.setText(subject);
@@ -26,5 +27,26 @@ public class FlashcardSetCardController {
     public void setProgress(double value) {
         progressBar.setProgress(value);
         progressTextLabel.setText((int) Math.round(value * 100) + "% Completed");
+        setShowProgress(true);
+    }
+
+    /** Teacher uses this to hide progress completely. */
+    public void setShowProgress(boolean show) {
+        if (progressTextLabel != null) {
+            progressTextLabel.setVisible(show);
+            progressTextLabel.setManaged(show);
+        }
+        if (progressBar != null) {
+            progressBar.setVisible(show);
+            progressBar.setManaged(show);
+        }
+    }
+
+    public void setOnDelete(Runnable action) { 
+        this.deleteAction = action;
+    } 
+    @FXML 
+    private void onDeleteClicked() {
+        if (deleteAction != null) deleteAction.run();
     }
 }

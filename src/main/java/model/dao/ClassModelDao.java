@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import model.datasource.MariaDbJPAConnection;
 import model.entity.ClassModel;
+import model.entity.FlashcardSet;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ClassModelDao {
         }
     }
 
-    public ClassModel find(int classId) {
+    public ClassModel findById(int classId) {
         try (EntityManager em = MariaDbJPAConnection.createEntityManager()) {
             return em.find(ClassModel.class, Integer.valueOf(classId));
         }
@@ -88,4 +89,68 @@ public class ClassModelDao {
             return query.getSingleResult() > 0;
         }
     }
+
+
+    public List<ClassModel> findClassesOfUser(int userId) {
+        EntityManager em = MariaDbJPAConnection.createEntityManager();
+        return em.createQuery("""
+        SELECT DISTINCT c FROM ClassModel c
+        LEFT JOIN FETCH c.students
+        LEFT JOIN FETCH c.flashcardSets
+        WHERE c.teacher.userId = :uid
+           OR c.classId IN (
+                SELECT cd.classModel.classId
+                FROM ClassDetails cd
+                WHERE cd.student.userId = :uid
+           )
+    """, ClassModel.class)
+                .setParameter("uid", userId)
+                .getResultList();
+    }
+
+    public ClassModel findByIdWithRelations(int classId) {
+        try (EntityManager em = MariaDbJPAConnection.createEntityManager()) {
+            return em.createQuery("""
+            SELECT c FROM ClassModel c
+            LEFT JOIN FETCH c.students s
+            LEFT JOIN FETCH s.student
+            LEFT JOIN FETCH c.flashcardSets fs
+            WHERE c.classId = :id
+        """, ClassModel.class)
+                    .setParameter("id", classId)
+                    .getSingleResult();
+        }
+    }
+    public void deleteClassWithRelations(ClassModel classModel) {
+        try (EntityManager em = MariaDbJPAConnection.createEntityManager()) {
+            em.getTransaction().begin();
+            try {
+                ClassModel merged = em.merge(classModel);
+
+                // 1. delete flashcards of flashcard set
+                merged.getFlashcardSets().forEach(set -> {
+                    FlashcardSet mergedSet = em.merge(set);
+                    mergedSet.getTotalCards().forEach(card -> {
+                        em.remove(em.merge(card));
+                    });
+                    em.remove(mergedSet);
+                });
+
+
+                // 2. Delete students in class
+                merged.getStudents().forEach(cd -> {
+                    em.remove(em.merge(cd));
+                });
+
+                // 3. Delete class
+                em.remove(merged);
+
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                throw e;
+            }
+        }
+    }
+
 }

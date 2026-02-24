@@ -20,4 +20,24 @@ public class FlashcardSetService {
     public List<FlashcardSet> getSetsByClass(int classId) {
         return setDao.findByClassId(classId);
     }
+
+    public void save(FlashcardSet set) {
+        if (set.getFlashcardSetId() == null) {
+            // new set → insert
+            setDao.persist(set);
+        } else {
+            // existing set → update
+            setDao.update(set);
+        }
+    }
+    public FlashcardSet getSetWithCards(int setId) {
+        return setDao.findWithCards(setId);
+    }
+
+    public void deleteSet(FlashcardSet set) {
+        if (set != null && set.getFlashcardSetId() != null) {
+            setDao.delete(set);
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ package model.dao;
 import model.entity.User;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,7 +44,7 @@ class UserDaoTest {
         u.setFirstName("Test");
         u.setLastName("User");
         u.setEmail("test+" + uid + "@example.com");
-        u.setGoogleId("test-gid-" + uid);
+        u.setPassword("password123");
         u.setRole(1);
         return u;
     }
@@ -61,7 +62,7 @@ class UserDaoTest {
         User found = userDao.find(id);
         assertNotNull(found);
         assertEquals(u.getEmail(), found.getEmail());
-        assertEquals(u.getGoogleId(), found.getGoogleId());
+        assertEquals(u.getPassword(), found.getPassword());
 
         // UPDATE
         found.setLastName("VoUpdated");
@@ -92,18 +93,49 @@ class UserDaoTest {
             assertNotNull(byEmail);
             assertEquals(id, byEmail.getUserId());
 
-            // existsByGoogleId
-            assertTrue(userDao.existsByGoogleId(u.getGoogleId()));
+            // existsByEmail
+            assertTrue(userDao.existsByEmail(u.getEmail()));
 
-            // findByGoogleId
-            User byGid = userDao.findByGoogleId(u.getGoogleId());
-            assertNotNull(byGid);
-            assertEquals(id, byGid.getUserId());
+            // findByEmailAndPassword
+            User byEmailAndPassword = userDao.findByEmailAndPassword(u.getEmail(), u.getPassword());
+            assertNotNull(byEmailAndPassword);
+            assertEquals(id, byEmailAndPassword.getUserId());
 
         } finally {
             // cleanup - ensure deletion even if test fails
             userDao.delete(u);
-            assertFalse(userDao.existsByGoogleId(u.getGoogleId()));
+            assertFalse(userDao.existsByEmail(u.getEmail()));
         }
     }
+    @Test
+    void findAllUsers() {
+        User u = newUser();
+        userDao.persist(u);
+
+        List<User> all = userDao.findAll();
+        assertTrue(all.stream().anyMatch(x -> x.getUserId().equals(u.getUserId())));
+
+        userDao.delete(u);
+    }
+
+    @Test
+    void findByRole() {
+        User teacher = newUser();
+        teacher.setRole(1);
+        userDao.persist(teacher);
+
+        User student = newUser();
+        student.setRole(0);
+        userDao.persist(student);
+
+        List<User> teachers = userDao.findByRole(1);
+        assertTrue(teachers.stream().anyMatch(x -> x.getUserId().equals(teacher.getUserId())));
+
+        List<User> students = userDao.findByRole(0);
+        assertTrue(students.stream().anyMatch(x -> x.getUserId().equals(student.getUserId())));
+
+        userDao.delete(teacher);
+        userDao.delete(student);
+    }
+
 }
