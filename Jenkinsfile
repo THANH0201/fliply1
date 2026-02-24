@@ -13,14 +13,12 @@ pipeline {
                 bat 'mvn clean install'
             }
         }
-
-       stage('Test') {
-    steps {
-        bat 'mvn -Dtest=*ServiceTest,*RepositoryTest test'
-    }
-}
-
-
+        
+        stage('Test') {
+            steps {
+                bat 'mvn -Dtest=*DaoTest,*ServiceTest,*RepositoryTest test'
+            }
+        }
 
         stage('Code Coverage') {
             steps {
